@@ -1,0 +1,15 @@
+body {
+    background-color: rgb(99, 58, 5);
+}
+
+.cuerpo {
+    width: 10px;
+    height: 10px;
+    background-color: azure;
+    position: absolute;
+    border: none;
+}
+
+#c1 {
+    background-color: rgb(191, 239, 239);
+}
