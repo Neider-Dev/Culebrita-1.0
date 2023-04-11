@@ -1,10 +1,12 @@
 "use strict";
 var game = function () {
-    var time = 500;
+    var time = 100;
     var controlGame;
     var movimiento = 10;
-    var direccionAnteriorPausado = 1;
-    var pausado = 1;
+    var direccionAnteriorPausado;
+    var pausado;
+    var width = Math.round(document.documentElement.clientWidth);
+    var height = Math.round(document.documentElement.clientHeight);
     var cuadrados = [];
     for (let i = 0; i < 8; i++) {
         let cuadrado = {
@@ -32,19 +34,28 @@ var game = function () {
     }
     ;
     function init() {
+        direccionAnteriorPausado = 1;
+        pausado = 1;
         cabeza.html.style.left = `${(10 * (cuadrados.length + 1))}px`;
         cabeza.html.style.top = `${10}px`;
+        cabeza.direction = 5;
         for (let i = 0; i < cuadrados.length; i++) {
             cuadrados[i].positionX = (10 * cuadrados.length) - (10 * i);
             cuadrados[i].positionY = 10;
             cuadrados[i].html.style.left = `${cuadrados[i].positionX}px`;
             cuadrados[i].html.style.top = `${cuadrados[i].positionY}px`;
+            cuadrados[i].direction = 5;
+            cuadrados[i].positionCambioX = [0];
+            cuadrados[i].positionCambioY = [0];
+            cuadrados[i].directionFutura = [1];
         }
     }
     ;
     function play() {
-        moverCabeza();
+        width = Math.round(document.documentElement.clientWidth);
+        height = Math.round(document.documentElement.clientHeight);
         moverCuerpo();
+        moverCabeza();
     }
     document.onkeydown = function (e) {
         e = e || window.event;
@@ -87,8 +98,12 @@ var game = function () {
                 cuadrados.map(element => element.direction = element.directionFutura[0]);
             }
         }
+        if (e.key == "r") {
+            reiniciar();
+        }
     };
     function moverCabeza() {
+        comprovarBordesCabeza();
         switch (cabeza.direction) {
             case 1:
                 cabeza.html.style.left = `${cabeza.html.getBoundingClientRect().left + movimiento}px`;
@@ -109,6 +124,7 @@ var game = function () {
     function moverCuerpo() {
         if (cabeza.direction != 5)
             comprovarPosicion();
+        comprovarBordesCuerpo();
         for (let i = 0; i < cuadrados.length; i++) {
             switch (cuadrados[i].direction) {
                 case 1:
@@ -145,6 +161,45 @@ var game = function () {
             }
             ;
         });
+    }
+    ;
+    function comprovarBordesCabeza() {
+        if (cabeza.html.getBoundingClientRect().top >= (height)) {
+            cabeza.html.style.top = `0px`;
+        }
+        else if (cabeza.html.getBoundingClientRect().top < 0) {
+            cabeza.html.style.top = `${height - 10}px`;
+        }
+        else if (cabeza.html.getBoundingClientRect().left < 0) {
+            cabeza.html.style.left = `${width - 10}px`;
+        }
+        else if (cabeza.html.getBoundingClientRect().left > width) {
+            cabeza.html.style.left = `${0}px`;
+        }
+    }
+    function comprovarBordesCuerpo() {
+        for (let i = 0; i < cuadrados.length; i++) {
+            if (cuadrados[i].html.getBoundingClientRect().top >= (height)) {
+                cuadrados[i].html.style.top = `0px`;
+            }
+            else if (cuadrados[i].html.getBoundingClientRect().top < 0) {
+                cuadrados[i].html.style.top = `${height - 10}px`;
+            }
+            else if (cuadrados[i].html.getBoundingClientRect().left < 0) {
+                cuadrados[i].html.style.left = `${width - 10}px`;
+            }
+            else if (cuadrados[i].html.getBoundingClientRect().left > width) {
+                cuadrados[i].html.style.left = `${0}px`;
+            }
+        }
+    }
+    function stop() {
+        clearInterval(controlGame);
+    }
+    ;
+    function reiniciar() {
+        stop();
+        start();
     }
     ;
     start();

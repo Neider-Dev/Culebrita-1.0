@@ -1,10 +1,12 @@
 var game: void = function(): void{
 
-    var time: number = 500;
+    var time: number = 100;
     var controlGame: number;
     var movimiento: number = 10;
-    var direccionAnteriorPausado: number = 1;
-    var pausado: number = 1; 
+    var direccionAnteriorPausado: number;
+    var pausado: number;
+    var width: number = Math.round(document.documentElement.clientWidth); //Ancho
+    var height: number = Math.round(document.documentElement.clientHeight); //Alto
 
     type cuadrado = {
         name: string,
@@ -51,24 +53,33 @@ var game: void = function(): void{
 
     function start(): void{
         init(); 
-        controlGame = setInterval(play,time)
+        controlGame = setInterval(play,time);
     };
 
     function init(): void{
+        direccionAnteriorPausado = 1;
+        pausado = 1;
         cabeza.html.style.left = `${(10 * (cuadrados.length+1))}px`
         cabeza.html.style.top = `${10}px`
+        cabeza.direction = 5;
 
         for(let i=0;i<cuadrados.length; i++){
             cuadrados[i].positionX = (10 * cuadrados.length)-(10*i);
             cuadrados[i].positionY = 10;
             cuadrados[i].html.style.left = `${cuadrados[i].positionX}px`;
             cuadrados[i].html.style.top = `${cuadrados[i].positionY}px`;
+            cuadrados[i].direction = 5;
+            cuadrados[i].positionCambioX = [0];
+            cuadrados[i].positionCambioY = [0];
+            cuadrados[i].directionFutura = [1];
         }
     };
 
     function play(): void{
-        moverCabeza();
+        width = Math.round(document.documentElement.clientWidth); //Ancho
+        height= Math.round(document.documentElement.clientHeight); //Alto
         moverCuerpo();
+        moverCabeza();
     }
 
     document.onkeydown = function(e){
@@ -113,10 +124,13 @@ var game: void = function(): void{
                 //Se usa para mover el cuerpo despues de pausar 
             }
         }
-            
+        if(e.key == "r"){
+            reiniciar();
+        } 
     }
 
     function moverCabeza(): void{
+        comprovarBordesCabeza();
         switch(cabeza.direction){
             case 1://derecha
                 cabeza.html.style.left = `${cabeza.html.getBoundingClientRect().left+movimiento}px`
@@ -136,7 +150,8 @@ var game: void = function(): void{
     }
 
     function moverCuerpo(): void{
-        if(cabeza.direction != 5) comprovarPosicion();
+        if(cabeza.direction != 5) comprovarPosicion(); //El if evita que se comprueve mientras la cabeza esta quieta
+        comprovarBordesCuerpo();
         for(let i=0; i<cuadrados.length;i++){
             switch(cuadrados[i].direction){
                 case 1://derecha
@@ -163,11 +178,6 @@ var game: void = function(): void{
             element.positionCambioY.push(Math.round(cabeza.html.getBoundingClientRect().top));
             element.directionFutura.push(cabeza.direction);
             })
-        //    console.log(cuadrados[0].directionFutura)
-        //    console.log(cuadrados[0].positionCambioX)
-        //    console.log(cuadrados[0].positionCambioY)
-        //cuadrados.map(element => console.log(element.positionCambioX))
-        //cuadrados.map(element => console.log(element.positionCambioY))
     }
 
     function comprovarPosicion(): void{
@@ -181,6 +191,41 @@ var game: void = function(): void{
         });
     };
 
+    function comprovarBordesCabeza(): void{
+        if(cabeza.html.getBoundingClientRect().top >= (height)){
+            cabeza.html.style.top = `0px`;
+        }else if(cabeza.html.getBoundingClientRect().top < 0){
+            cabeza.html.style.top = `${height-10}px`;
+        }else if(cabeza.html.getBoundingClientRect().left < 0){
+            cabeza.html.style.left = `${width-10}px`;
+        }else if(cabeza.html.getBoundingClientRect().left > width){
+            cabeza.html.style.left = `${0}px`;
+            //console.log(`Coordenadas actuales ${Math.round(cabeza.html.getBoundingClientRect().left)}, ${cabeza.html.getBoundingClientRect().top}, y direccion: ${cabeza.direction}`)
+        }
+    }
+
+    function comprovarBordesCuerpo(): void{
+        for(let i=0; i<cuadrados.length; i++){
+            if(cuadrados[i].html.getBoundingClientRect().top >= (height)){
+                cuadrados[i].html.style.top = `0px`;
+            }else if(cuadrados[i].html.getBoundingClientRect().top < 0){
+                cuadrados[i].html.style.top = `${height-10}px`;
+            }else if(cuadrados[i].html.getBoundingClientRect().left < 0){
+                cuadrados[i].html.style.left = `${width-10}px`;
+            }else if(cuadrados[i].html.getBoundingClientRect().left > width){
+                cuadrados[i].html.style.left = `${0}px`;
+            }
+        }
+    }
+
+    function stop(): void{
+        clearInterval(controlGame);
+    };
+
+    function reiniciar(): void{
+        stop();
+        start();
+    };
 
     start();
 }();
